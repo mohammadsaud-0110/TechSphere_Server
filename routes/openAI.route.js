@@ -49,18 +49,34 @@ aiRouter.post('/getQuestions', (req,res)=>{
 
 //openai text input for que-ans
 aiRouter.post('/message', (req,res) => {
-    const response = openai.createCompletion({
-        model: 'text-davinci-003',
-        prompt: req.body.prompt,
-        temperature: 0,
-        top_p: 1,
-        frequency_penalty: 0,
-        presence_penalty: 0,
-        max_tokens: 1024
-    })
-    response.then((data)=>{
-        res.send({ message : data.data.choices[0].text });
-    })
+    try {
+        let interviewID = req.body.interviewID;
+        const response = openai.createCompletion({
+            model: 'text-davinci-003',
+            prompt: req.body.prompt,
+            temperature: 0,
+            top_p: 1,
+            frequency_penalty: 0,
+            presence_penalty: 0,
+            max_tokens: 1024
+        })
+        response.then(async (data)=>{
+            let feedback = data.data.choices[0].text.split("\n");
+            let score = feedback[2].split(", ");
+            let communicationSkill = +score[0].split(": ")[1].split("/")[0];
+            let techicalKnowledge = +score[1].split(": ")[1].split("/")[0];
+            let ans = feedback[4].split(": ")[1];
+            let intData = await InterviewModel.findById(interviewID);
+            intData.communication.push(communicationSkill);
+            intData.technical.push(techicalKnowledge);
+            await InterviewModel.findByIdAndUpdate({ "_id": interviewID }, intData);
+            res.send({ communicationSkill, techicalKnowledge, ans });
+        })
+    } 
+    catch (error) {
+        res.send({message: error.message})    
+    }
+    
 });
 
 module.exports={
