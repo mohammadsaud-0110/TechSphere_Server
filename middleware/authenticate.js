@@ -6,7 +6,7 @@ const authenticate=(req,res,next)=>{
     if(token){
         jwt.verify(token, process.env.accessToken ,(err,decoded)=>{
             if(decoded){
-                req.body.user=decoded.userID;
+                req.body.user = decoded.userID;
                 next()
             }
             else{

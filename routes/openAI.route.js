@@ -66,10 +66,14 @@ aiRouter.post('/message', (req,res) => {
             let communicationSkill = +score[0].split(": ")[1].split("/")[0];
             let techicalKnowledge = +score[1].split(": ")[1].split("/")[0];
             let ans = feedback[4].split(": ")[1];
+
             let intData = await InterviewModel.findById(interviewID);
+            
             intData.communication.push(communicationSkill);
             intData.technical.push(techicalKnowledge);
+            
             await InterviewModel.findByIdAndUpdate({ "_id": interviewID }, intData);
+            
             res.send({ communicationSkill, techicalKnowledge, ans });
         })
     } 
@@ -78,6 +82,31 @@ aiRouter.post('/message', (req,res) => {
     }
     
 });
+
+aiRouter.get('/getAverage/:interviewID', async(req,res) => {
+    try {
+        let interviewID = req.params.interviewID;
+        let intData = await InterviewModel.findById(interviewID);
+        // res.send(intData)
+        let comm = intData.communication;
+        let tech = intData.technical;
+        let sumCom = 0, sumTech = 0;
+        for(let i=0; i<comm.length && i<tech.length; i++){
+            sumCom += +comm[i];
+            sumTech += +tech[i];
+        }
+        sumCom = sumCom / comm.length;
+        sumTech = sumTech / tech.length;
+        intData.communicationAVG = sumCom;
+        intData.technicalAVG = sumTech;
+        await InterviewModel.findByIdAndUpdate({ "_id": interviewID }, intData);
+        let result = await InterviewModel.find({ _id: interviewID}).populate('user','name');
+        res.send({result})
+    } 
+    catch (error) {
+        res.send({message: "Error occured", error: error.message});
+    }
+})
 
 module.exports={
     aiRouter
