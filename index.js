@@ -28,7 +28,23 @@ app.get("/note", authenticate , (req,res)=>{
     res.send("To check if middleware is working")
 })
 
-//openai text input
+//openai to get questions
+app.post('/getQuestions', (req,res)=>{
+    const response = openai.createCompletion({
+        model: 'text-davinci-003',
+        prompt: req.body.prompt,
+        temperature: 0,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+        max_tokens: 1024
+    })
+    response.then((data)=>{
+        res.send({ message : data.data.choices[0].text });
+    })
+})
+
+//openai text input for que-ans
 app.post('/message', (req,res) => {
     const response = openai.createCompletion({
         model: 'text-davinci-003',
