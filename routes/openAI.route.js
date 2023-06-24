@@ -54,18 +54,18 @@ aiRouter.post('/message', (req,res) => {
         const response = openai.createCompletion({
             model: 'text-davinci-003',
             prompt: req.body.prompt,
-            temperature: 0,
+            temperature: 0.2,
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0,
             max_tokens: 1024
         })
         response.then(async (data)=>{
-            let feedback = data.data.choices[0].text.split("\n");
-            let score = feedback[2].split(", ");
-            let communicationSkill = +score[0].split(": ")[1].split("/")[0];
-            let techicalKnowledge = +score[1].split(": ")[1].split("/")[0];
-            let ans = feedback[4].split(": ")[1];
+            let feedback = data.data.choices[0].text + "";
+            feedback = feedback.split(";");
+            let communicationSkill = +feedback[0].split(": ")[1].split("/")[0];
+            let techicalKnowledge = +feedback[1].split(": ")[1].split("/")[0];
+            let ans = feedback[2].split(": ")[1];
 
             let intData = await InterviewModel.findById(interviewID);
             
